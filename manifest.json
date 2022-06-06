@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Support Post Typing Helper",
+  "version": "1.1.0",
+  "author": "hanthebot",
+  "action": {
+    "default_title": "Tap to paste",
+    "default_popup": "popup.html"
+    },
+  "icons":{"128": "icon.png"},
+  "description": "Helps typing customer information in Support Post",
+  "content_scripts": [{
+    "js": ["content.js"],
+    "matches": ["https://www.s-post.kr/Front/Acting/Order_W.asp"]
+  }],
+  "commands":{
+    "submitNaver": {
+      "suggested_key": {"default": "Ctrl+Shift+1"},
+      "description": "Submit the information in the clipboard for Naver"
+      },
+    "submitSSG": {
+      "suggested_key": {"default": "Ctrl+Shift+2"},
+      "description": "Submit the information in the clipboard for SSG"
+      },
+    "submitCoupang": {
+      "suggested_key": {"default": "Ctrl+Shift+3"},
+      "description": "Submit the information in the clipboard for Coupang"
+      }
+    },
+  "background": {"service_worker": "./background.js"},
+  "permissions":["activeTab", "tabs", "clipboardRead", "storage", "background"]
+}
