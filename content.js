@@ -4,7 +4,6 @@ chrome.runtime.onMessage.addListener(
         switch (request.message) {
             case "process":
                 if (request.store == "naver") {data = naver(request.text);}
-                else if (request.store == "ssg") {data = SSG(request.text);}
                 else if (request.store == "coupang") {data = coupang(request.text);}
                 else {data = {};}
                 process(data);
@@ -12,11 +11,27 @@ chrome.runtime.onMessage.addListener(
             case "copy&process":
                 text = getPasted();
                 if (request.store == "naver") {data = naver(text);}
-                else if (request.store == "ssg") {data = SSG(text);}
                 else if (request.store == "coupang") {data = coupang(text);}
                 else {data = {};}
                 process(data);
                 window.scrollTo(0, 0);
+                break;
+            case "address_process":
+                text = getPasted();
+                if (request.store == "naver") {data = naver(text);}
+                else if (request.store == "coupang") {data = coupang(text);}
+                else {data = {};}
+                document.querySelector('input[name="keyword"]').value = data.address_1;
+                document.querySelector('a[class="btn_cancel"]').click();
+                setTimeout(function() {
+                    document.querySelector('select[id="searchJusoaddr1"]').getElementsByTagName('option')[1].selected = 'selected';
+                    var realConfirm=window.confirm;
+                    window.confirm=function(){
+                      window.confirm=realConfirm;
+                      return true;
+                    };
+                    document.querySelector('select[id="searchJusoaddr1"]').dispatchEvent(new Event('change'));
+                }, 1500);
                 break;
          }
       }
@@ -35,19 +50,6 @@ function naver(text){
         data.address_1 = address[0];
         data.address_2 = address[1];
         data.request = text.split("배송메모	")[1].split("\n")[0];
-        return data;
-    } catch (err) {
-        alert("Please type valid text: not \""+text+"\"");
-        console.log(err);
-        return {};
-    }
-}
-    
-function SSG(text){
-    try {
-        var data = {};
-        alert("Store option comming soon");
-        console.log(text);
         return data;
     } catch (err) {
         alert("Please type valid text: not \""+text+"\"");
@@ -82,6 +84,9 @@ function process(inputData) {
     for (const [key, value] of Object.entries(inputData)) {
         document.querySelector('input[name=\"'+nameCode[key]+'\"]').value = value;
         }
+    if ("address_1" in inputData) {
+        document.querySelector('a[class="btn_red1 vm"]').click();
+    }
         
     return true;
 }

@@ -1,32 +1,36 @@
 {
   "manifest_version": 3,
-  "name": "Support Post Typing Helper",
-  "version": "1.1.0",
+  "name": "S-post",
+  "version": "1.2.0",
   "author": "hanthebot",
   "action": {
     "default_title": "Tap to paste",
     "default_popup": "popup.html"
     },
   "icons":{"128": "icon.png"},
-  "description": "Helps typing customer information in Support Post",
+  "description": "서포트포스트 한국 주소 입력 단축키 프로그램",
   "content_scripts": [{
     "js": ["content.js"],
-    "matches": ["https://www.s-post.kr/Front/Acting/Order_W.asp"]
+    "matches": ["https://www.s-post.kr/*"]
   }],
   "commands":{
     "submitNaver": {
       "suggested_key": {"default": "Ctrl+Shift+1"},
       "description": "Submit the information in the clipboard for Naver"
       },
-    "submitSSG": {
-      "suggested_key": {"default": "Ctrl+Shift+2"},
-      "description": "Submit the information in the clipboard for SSG"
+    "addressNaver": {
+      "suggested_key": {"default": "Ctrl+Shift+Q"},
+      "description": "Address hotkey for Naver"
       },
     "submitCoupang": {
-      "suggested_key": {"default": "Ctrl+Shift+3"},
+      "suggested_key": {"default": "Ctrl+Shift+2"},
       "description": "Submit the information in the clipboard for Coupang"
+      },
+    "addressCoupang": {
+      "suggested_key": {"default": "Ctrl+Shift+W"},
+      "description": "Address hotkey for Coupang"
       }
     },
   "background": {"service_worker": "./background.js"},
-  "permissions":["activeTab", "tabs", "clipboardRead", "storage", "background"]
+  "permissions":["tabs", "clipboardRead", "background"]
 }
