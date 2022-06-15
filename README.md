@@ -1,6 +1,7 @@
 # Support Post Typing Helper Chrome Extension
 
-서포트포스트의 한국 주소 입력을 편하게 해주는 프로그램입니다. 현재 네이버 스마트스토어 "주문 상세정보" 포맷만 지원됩니다.
+서포트포스트의 한국 주소 입력을 편하게 해주는 크롬 확장프로그램입니다. 현재 네이버 스마트스토어 "주문 상세정보" 포맷만 지원됩니다. \
+[웹스토어 링크][web_store_link]
 
 ## 사용법
 1. 주문 상세정보를 전체 복사 (Ctrl+A & Ctrl+C)
@@ -11,3 +12,5 @@
 
 ## 단축키
 Ctrl+Shift+1: 기본정보 입력/도로명주소 창 팝업/입력 (네이버)
+
+[web_store_link]: https://chrome.google.com/webstore/detail/s-post/enokaidmlgfemglfbcemlhgfdnldkgcj
