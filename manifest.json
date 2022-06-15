@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "S-post",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "author": "hanthebot",
   "action": {
     "default_title": "Tap to paste",
@@ -18,17 +18,9 @@
       "suggested_key": {"default": "Ctrl+Shift+1"},
       "description": "Submit the information in the clipboard for Naver"
       },
-    "addressNaver": {
-      "suggested_key": {"default": "Ctrl+Shift+Q"},
-      "description": "Address hotkey for Naver"
-      },
     "submitCoupang": {
       "suggested_key": {"default": "Ctrl+Shift+2"},
       "description": "Submit the information in the clipboard for Coupang"
-      },
-    "addressCoupang": {
-      "suggested_key": {"default": "Ctrl+Shift+W"},
-      "description": "Address hotkey for Coupang"
       }
     },
   "background": {"service_worker": "./background.js"},

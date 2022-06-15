@@ -3,13 +3,11 @@ chrome.runtime.onMessage.addListener(
         var data;
         switch (request.message) {
             case "process":
-                if (request.store == "naver") {data = naver(request.text);}
-                else if (request.store == "coupang") {data = coupang(request.text);}
-                else {data = {};}
-                process(data);
-                break;
-            case "copy&process":
-                text = getPasted();
+                if (request.text) { 
+                    text = request.text;
+                } else {
+                    text = getPasted();
+                }
                 if (request.store == "naver") {data = naver(text);}
                 else if (request.store == "coupang") {data = coupang(text);}
                 else {data = {};}
@@ -17,7 +15,11 @@ chrome.runtime.onMessage.addListener(
                 window.scrollTo(0, 0);
                 break;
             case "address_process":
-                text = getPasted();
+                if (request.text) { 
+                    text = request.text;
+                } else {
+                    text = getPasted();
+                }
                 if (request.store == "naver") {data = naver(text);}
                 else if (request.store == "coupang") {data = coupang(text);}
                 else {data = {};}

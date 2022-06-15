@@ -2,24 +2,17 @@ try {
     chrome.commands.onCommand.addListener(function (command) {
         switch (command) {
             case 'submitNaver':
-                chrome.tabs.query({currentWindow: true, active: true}, function (tabs){
-                chrome.tabs.sendMessage(tabs[0].id, {"message": "copy&process", "store": "naver"});
-                });
-                break;
             case 'submitCoupang':
+                storeDict = {"submitNaver": "naver", "submitCoupang": "coupang"};
+                store = storeDict[command];
                 chrome.tabs.query({currentWindow: true, active: true}, function (tabs){
-                chrome.tabs.sendMessage(tabs[0].id, {"message": "copy&process", "store": "coupang"});
+                chrome.tabs.sendMessage(tabs[0].id, {"message": "process", "store": store, "text": false});
                 });
-                break;
-            case 'addressNaver':
-                chrome.tabs.query({url: "https://www.s-post.kr/Library/Html/ZipSearchPop_S.asp"}, function (tabs){
-                chrome.tabs.sendMessage(tabs[0].id, {"message": "address_process", "store": "naver"});
-                });
-                break;
-            case 'addressCoupang':
-                chrome.tabs.query({url: "https://www.s-post.kr/Library/Html/ZipSearchPop_S.asp"}, function (tabs){
-                chrome.tabs.sendMessage(tabs[0].id, {"message": "address_process", "store": "coupang"});
-                });
+                setTimeout(function() {
+                    chrome.tabs.query({url: "https://www.s-post.kr/Library/Html/ZipSearchPop_S.asp"}, function (tabs){
+                    chrome.tabs.sendMessage(tabs[0].id, {"message": "address_process", "store": store, "text": false});
+                    });
+                }, 2000);
                 break;
             default:
                 console.log(`Command ${command} not found`);
