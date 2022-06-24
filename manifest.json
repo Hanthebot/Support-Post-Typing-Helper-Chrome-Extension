@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "S-post",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "author": "hanthebot",
   "action": {
     "default_title": "Tap to paste",
