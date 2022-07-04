@@ -27,11 +27,6 @@ chrome.runtime.onMessage.addListener(
                 document.querySelector('a[class="btn_cancel"]').click();
                 setTimeout(function() {
                     document.querySelector('select[id="searchJusoaddr1"]').getElementsByTagName('option')[1].selected = 'selected';
-                    var realConfirm=window.confirm;
-                    window.confirm=function(){
-                      window.confirm=realConfirm;
-                      return true;
-                    };
                     document.querySelector('select[id="searchJusoaddr1"]').dispatchEvent(new Event('change'));
                 }, 1500);
                 break;
@@ -84,10 +79,10 @@ function process(inputData) {
                      "address_2": "ADDR_2",
                      "request": "REQ_1"};
     for (const [key, value] of Object.entries(inputData)) {
-        document.querySelector('input[name=\"'+nameCode[key]+'\"]').value = value;
+        document.querySelector('input[name=\"' + nameCode[key] + '\"]').value = value;
         }
     if ("address_1" in inputData) {
-        document.querySelector('a[class="btn_red1 vm"]').click();
+        document.querySelectorAll('a[class="btn_red1 vm"]')[1].click();
     }
         
     return true;

@@ -3,13 +3,12 @@ function submitT () {
     setTimeout(function() {
      addr_submit();
     }, 2000);
-    //document.getElementById("textbox").value = "";
 }
 
 function b_submit () {
     var text = document.getElementById("textbox").value;
     var store = document.querySelector('input[name="store"]:checked').value;
-    chrome.tabs.query({currentWindow: true, active: true}, function (tabs){
+    chrome.tabs.query({currentWindow: true, active: true}, function (tabs) {
         chrome.tabs.sendMessage(tabs[0].id, {"message": "process", "store": store, "text": text});
     });
 }
@@ -28,10 +27,9 @@ function paste () {
 function addr_submit () {
     var text = document.getElementById("textbox").value;
     var store = document.querySelector('input[name="store"]:checked').value;
-    chrome.tabs.query({url: "https://www.s-post.kr/Library/Html/ZipSearchPop_S.asp"}, function (tabs){
+    chrome.tabs.query({url: "https://www.s-post.kr/Library/Html/ZipSearchPop_S.asp"}, function (tabs) {
         chrome.tabs.sendMessage(tabs[0].id, {"message": "address_process", "store": store, "text": text});
     });
-    //document.getElementById("textbox").value = "";
 }
 
 document.addEventListener('DOMContentLoaded', function() {
