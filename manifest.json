@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "S-post",
-  "version": "1.2.3",
+  "version": "1.2.9.7",
   "author": "hanthebot",
   "action": {
     "default_title": "Tap to paste",
@@ -11,7 +11,7 @@
   "description": "서포트포스트 한국 주소 입력 단축키 프로그램",
   "content_scripts": [{
     "js": ["content.js"],
-    "matches": ["https://www.s-post.kr/*"]
+    "matches": ["https://www.s-post.kr/*", "https://buyertrade.taobao.com/trade/itemlist/*", "https://h5.m.taobao.com/mlapp/*"]
   }],
   "commands": {
     "submitNaver": {
@@ -21,8 +21,12 @@
     "submitCoupang": {
       "suggested_key": {"default": "Ctrl+Shift+2"},
       "description": "Submit the information in the clipboard for Coupang"
+      },
+    "scanAuto": {
+      "suggested_key": {"default": "Ctrl+Shift+3"},
+      "description": "Submit the information in the clipboard for Coupang"
       }
     },
-  "background": {"service_worker": "./background.js"},
+  "background": {"service_worker": "background.js"},
   "permissions": ["tabs", "clipboardRead", "background"]
 }
