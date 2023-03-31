@@ -1,40 +1,24 @@
 chrome.runtime.onMessage.addListener(
       function(request) {
-        var data;
         switch (request.message) {
             case "process":
-                if (request.text) { 
-                    text = request.text;
-                } else {
-                    text = getPasted();
-                }
-                if (request.store == "naver") {data = naver(text);}
-                else if (request.store == "coupang") {data = coupang(text);}
-                else {data = {};}
-                process(data);
+                process(request.text);
                 window.scrollTo(0, 0);
                 break;
             case "address_process":
-                if (request.text) { 
-                    text = request.text;
-                } else {
-                    text = getPasted();
-                }
-                if (request.store == "naver") {data = naver(text);}
-                else if (request.store == "coupang") {data = coupang(text);}
-                else {data = {};}
-                document.querySelector('input[name="keyword"]').value = data.address_1;
-                document.querySelector('a[class="btn_cancel"]').click();
-                setTimeout(function() {
-                    document.querySelector('select[id="searchJusoaddr1"]').getElementsByTagName('option')[1].selected = 'selected';
-                    document.querySelector('select[id="searchJusoaddr1"]').dispatchEvent(new Event('change'));
-                }, 1500);
+                addr_process(request.text);
                 break;
-            case "scan":
+            case "scanTaobao":
                 scanTaobao();
                 break;
-            case "scanM":
+            case "scanTaobaoM":
                 scanTaobaoMobile();
+                break;
+            case "scan1688":
+                scan1688();
+                break;
+            case "scan1688M":
+                scan1688Mobile();
                 break;
             case "alert":
                 alert(request.text);
@@ -46,19 +30,23 @@ chrome.runtime.onMessage.addListener(
       }
     );
 
+function determineStore(text) {
+    return "naver";
+}
+
 function naver(text){
     try {
-        var data = {};
-        data.receiver_name = text.split("수취인명	")[1].split("\n")[0];
-        data.PCC = text.split("개인통관고유부호	")[1].split("\n")[0];
-        var contact = text.split("연락처1	")[1].split("	")[0].split("-");
-        data.contact_1 = contact[0];
-        data.contact_2 = contact[1];
-        data.contact_3 = contact[2];
-        var address = text.split("배송지	")[text.split("배송지	").length - 1].split("\n배송메모	")[0].split("\n");
-        data.address_1 = address[0];
-        data.address_2 = address[1];
-        data.request = text.split("배송메모	")[1].split("\n")[0];
+        let data = {};
+        data.receiver_name = /수취인명[\t](.+)\n/.exec(text)[1];
+        data.PCC = /개인통관고유부호[\t](.+)\n/.exec(text)[1];
+        let contact = /연락처1[\t](\d{3})-(\d{4})-(\d{4})/.exec(text);
+        data.contact_1 = contact[1];
+        data.contact_2 = contact[2];
+        data.contact_3 = contact[3];
+        let address = /배송지\t(.*)\n(.*)\n/.exec(text);
+        data.address_1 = address[1];
+        data.address_2 = address[2];
+        data.request = /배송메모\t(.*)\n/.exec(text)[1];
         return data;
     } catch (err) {
         alert("Please type valid text: not \""+text+"\"");
@@ -69,9 +57,17 @@ function naver(text){
     
 function coupang(text){
     try {
-        var data = {};
-        alert("Store option comming soon");
-        console.log(text);
+        let data = {};
+        data.receiver_name = /수취인명[\t](.+)\n/.exec(text)[1];
+        data.PCC = /개인통관고유부호[\t](.+)\n/.exec(text)[1];
+        let contact = /연락처1[\t](\d{3})-(\d{4})-(\d{4})/.exec(text);
+        data.contact_1 = contact[1];
+        data.contact_2 = contact[2];
+        data.contact_3 = contact[3];
+        let address = /배송지\t(.*)\n(.*)\n/.exec(text);
+        data.address_1 = address[1];
+        data.address_2 = address[2];
+        data.request = /배송메모\t(.*)\n/.exec(text)[1];
         return data;
     } catch (err) {
         alert("Please type valid text: not \""+text+"\"");
@@ -80,8 +76,16 @@ function coupang(text){
     }
 }
     
-function process(inputData) {
-    var nameCode = {"receiver_name": "ADRS_KR",
+function process(text) {
+    if (!text) { 
+        text = getPasted();
+    }
+    let store = determineStore(text);
+    let data;
+    if (store == "naver") {data = naver(text);}
+    else if (store == "coupang") {data = coupang(text);}
+    else {data = {};}
+    let nameCode = {"receiver_name": "ADRS_KR",
                     "PCC": "RRN_NO",
                      "contact_1": "MOB_NO1",
                      "contact_2": "MOB_NO2",
@@ -90,14 +94,29 @@ function process(inputData) {
                      "address_1": "ADDR_1",
                      "address_2": "ADDR_2",
                      "request": "REQ_1"};
-    for (const [key, value] of Object.entries(inputData)) {
+    for (const [key, value] of Object.entries(data)) {
         document.querySelector('input[name=\"' + nameCode[key] + '\"]').value = value;
         }
-    if ("address_1" in inputData) {
+    if ("address_1" in data) {
         document.querySelectorAll('a[class="btn_red1 vm"]')[1].click();
-    }
-        
+    }   
     return true;
+}
+
+function addr_process(text) {
+    if (!text) { 
+        text = getPasted();
+    }
+    let store = determineStore(text);
+    if (store == "naver") {data = naver(text);}
+    else if (store == "coupang") {data = coupang(text);}
+    else {data = {};}
+    document.querySelector('input[name="keyword"]').value = data.address_1;
+    document.querySelector('a[class="btn_cancel"]').click();
+    setTimeout(function() {
+        document.querySelector('select[id="searchJusoaddr1"]').getElementsByTagName('option')[1].selected = 'selected';
+        document.querySelector('select[id="searchJusoaddr1"]').dispatchEvent(new Event('change'));
+    }, 1500);
 }
 
 function getPasted() {
@@ -107,7 +126,7 @@ function getPasted() {
         input.value = "";
         input.select();
         document.execCommand("paste");
-        var text = input.value;
+        let text = input.value;
         input.remove();
         return text;
     }
@@ -117,13 +136,6 @@ function getPasted() {
     }
 }
 
-/*
- a class = bought-wrapper-mod__th-operation___yRtHm
-https://trade.taobao.com/trade/memo/update_buy_memo.htm?bizOrderId=3260803285002089602&buyerId=2510080296&user_type=0&pageNum=1&auctionTitle=null&daetBegin=null&dateEnd=null&commentStatus=null&sellerNick=null&auctionStatus=NOT_SEND&isArchive=false&logisticsService=null&visibility=true
-
-a class = production-mod__pic___G8alD
-href = https://item.taobao.com/item.htm?id=704059237193&_u=g2appi988466
-*/
 function scanTaobao() {
     var order_ids = [];
     var i = 0;
@@ -136,12 +148,7 @@ function scanTaobao() {
             datalet = {};
             datalet.time = Date.now();
             datalet.order_id = element.getAttribute("data-id");
-            isFound = order_ids.some(element => {
-                if (element === datalet.order_id) {
-                    return true;
-                    }
-                return false;
-                });
+            isFound = order_ids.includes(datalet.order_id);
             if (!isFound) {
                 elementlet = element.querySelector('a[class="production-mod__pic___G8alD"]').getAttribute("href");
                 reglet = /\?id=(\d{5,})/g.exec(elementlet);
@@ -163,7 +170,7 @@ function scanTaobao() {
             i++;
             if (i === elements.length) {
                 setTimeout(function () {
-                    chrome.runtime.sendMessage({"message": "execute"});
+                    chrome.runtime.sendMessage({"message": "execute", "site": "Taobao", "environment": "PC"});
                 }, 2000);
             }
         }
@@ -193,12 +200,7 @@ function scanTaobaoMobile() {
                datalet.order_id = reglet[1];
             }
             
-            isFound = order_ids.some(element => {
-                if (element === datalet.order_id) {
-                    return true;
-                    }
-                return false;
-                });
+            isFound = order_ids.includes(datalet.order_id);
             if (!isFound) {
                 datalet.product_id = "N/A";
                 fetch("https://buyertrade.taobao.com/trade/json/transit_step.do?bizOrderId=" + datalet.order_id)
@@ -216,7 +218,7 @@ function scanTaobaoMobile() {
             i++;
             if (i === elements.length) {
                 setTimeout(function () {
-                    chrome.runtime.sendMessage({"message": "execute"});
+                    chrome.runtime.sendMessage({"message": "execute", "site": "Taobao", "environment": "Mobile"});
                 }, 2000);
             }
         }
@@ -225,4 +227,114 @@ function scanTaobaoMobile() {
             alert(err);
         }
         }
+}
+
+function scan1688() {
+    var order_ids = [];
+    var i = 0;
+    
+    chrome.runtime.sendMessage({"message": "reset"});
+    var elements = Array.from(document.getElementsByClassName("order-item"));
+    var parser = new DOMParser();
+    var payload = {headers: {'Content-Type': 'text/html'}, mode: 'cors', credentials: 'include'};
+    elements.forEach(function(element) {
+        try {
+            let datalet, isFound, elementlet, reglet, doc, lis;
+            datalet = {};
+            datalet.time = Date.now();
+            datalet.order_id = element.querySelector('input[class="tradeId"]').getAttribute("value");
+            isFound = order_ids.includes(datalet.order_id);
+            if (!isFound) {
+                elementlet = element.querySelector('a[class="productName"]').getAttribute("href");
+                reglet = /(\d{5,})/g.exec(elementlet);
+                if (reglet != null) {
+                   datalet.product_id = reglet[1];
+                }
+                fetch("https://trade.1688.com/order/new_step_order_detail.htm?orderId=" + datalet.order_id + "&tracelog=20120313bscentertologisticsbuyer&#logisticsTabTitle", payload)
+                    .then(res => res.text())
+                    .then(resp => {
+                        doc = parser.parseFromString(resp, "text/html");
+                        lis = doc.getElementsByClassName("info-item-val");
+                        if (lis.length > 2) {
+                            reglet = /(\w*\d{5,})/g.exec(lis[2].innerHTML);                            
+                            if (reglet != null) {
+                                datalet.express_id = reglet[1];
+                                chrome.runtime.sendMessage({"message": "add", "data": datalet});
+                            }
+                        }
+                        })
+                    .catch(err => {
+                        console.log('Fetch error', err);
+                        });
+                    order_ids.push(datalet.order_id);
+            }
+            i++;
+            if (i === elements.length) {
+                setTimeout(function () {
+                    chrome.runtime.sendMessage({"message": "execute", "site": "1688", "environment": "PC"});
+                }, 2000);
+            }
+        }
+        catch (err) {
+            alert(err);
+        }
+        });
+}
+
+
+function scan1688Mobile() {
+    var order_ids = [];
+    var i = 0;
+    var scrollEle = document.getElementsByClassName("rax-scrollview-vertical")[0];
+    var interval = setInterval(function(){
+        if (document.getElementsByClassName("list-page--bottomText--18PiVqh").length){
+            clearInterval(interval);
+            scrollEle.scrollTo(0, 0);
+            
+        } else{
+            scrollEle.scrollTo(0, scrollEle.scrollHeight);
+        }
+    }, 200);
+    chrome.runtime.sendMessage({"message": "reset"});
+    var elements = Array.from(document.getElementsByClassName("order-item"));
+    var parser = new DOMParser();
+    var payload = {headers: {'Content-Type': 'text/html'}, mode: 'cors', credentials: 'include'};
+    elements.forEach(function(element) {
+        try {
+            let datalet, isFound, reglet, doc, lis;
+            datalet = {};
+            datalet.time = Date.now();
+            datalet.order_id = element.querySelector('input[class="tradeId"]').getAttribute("value");
+            isFound = order_ids.includes(datalet.order_id);
+            if (!isFound) {
+                datalet.product_id = element.querySelector('a[class="productName"]').getAttribute("href");
+                fetch("https://trade2.m.1688.com/page/logisticsDetail.html?orderId=" + datalet.order_id + "&userRole=buyer", payload)
+                    .then(res => res.text())
+                    .then(resp => {
+                        doc = parser.parseFromString(resp, "text/html");
+                        lis = doc.getElementsByClassName("val");
+                        if (lis.length > 0) {
+                            reglet = /(\w*\d{5,})/g.exec(lis[0].innerHTML);
+                            if (reglet != null) {
+                                datalet.express_id = reglet[1];
+                                chrome.runtime.sendMessage({"message": "add", "data": datalet});
+                                }
+                            }
+                        })
+                    .catch(err => {
+                        console.log('Fetch error', err);
+                        });
+                    order_ids.push(datalet.order_id);
+            }
+            i++;
+            if (i === elements.length) {
+                setTimeout(function () {
+                    chrome.runtime.sendMessage({"message": "execute", "site": "1688", "environment": "PC"});
+                }, 2000);
+            }
+        }
+        catch (err) {
+            alert(err);
+        }
+        });
 }

@@ -3,38 +3,30 @@ var list = [];
 try {
     chrome.commands.onCommand.addListener(function (command) {
         switch (command) {
-            case 'submitNaver':
-            case 'submitCoupang':
-                storeDict = {"submitNaver": "naver", "submitCoupang": "coupang"};
-                store = storeDict[command];
+            case 'pasteKR':
                 chrome.tabs.query({currentWindow: true, active: true}, function (tabs) {
-                chrome.tabs.sendMessage(tabs[0].id, {"message": "process", "store": store, "text": false});
+                    chrome.tabs.sendMessage(tabs[0].id, {"message": "process", "text": false});
                 });
                 setTimeout(function() {
                     chrome.tabs.query({url: "https://www.s-post.kr/Library/Html/ZipSearchPop_S.asp"}, function (tabs) {
-                    chrome.tabs.sendMessage(tabs[0].id, {"message": "address_process", "store": store, "text": false});
+                        if (tabs.length) {
+                            chrome.tabs.sendMessage(tabs[0].id, {"message": "address_process", "text": false});
+                        }
                     });
                 }, 2000);
                 break;
-            case 'scanAuto':
-                chrome.tabs.query({}, function(tabs) {
-                    let found = false;
-                    for (var i=0; i < tabs.length; i++) {
-                        if (/https?:\/\/buyertrade\.taobao\.com\/trade\/itemlist\/list_bought_items\.htm/.test(tabs[i].url)) {
-                            found = true;
-                            chrome.tabs.sendMessage(tabs[0].id, {"message": "scan"});
-                            break; // you found it, stop searching and update the tab
-                        } else if (/https?:\/\/h5\.m\.taobao\.com\/mlapp\/olist.html\?.*tabCode=waitConfirm/.test(tabs[i].url)) {
-                            found = true;
-                            chrome.tabs.sendMessage(tabs[0].id, {"message": "scanM"});
-                            break;
-                        }
-                    }
-                    
-                    if (!found) {
-                        chrome.tabs.query({currentWindow: true, active: true}, function (tabs) {
-                            chrome.tabs.sendMessage(tabs[0].id, {"message": "alert", "text": "No window found"});
-                        });
+            case 'scanCN':
+                chrome.tabs.query({currentWindow: true, active: true}, function (tabs) {
+                    if (/https?:\/\/buyertrade\.taobao\.com\/trade\/itemlist\/list_bought_items\.htm/.test(tabs[0].url)) {
+                        chrome.tabs.sendMessage(tabs[0].id, {"message": "scanTaobao"});
+                    } else if (/https?:\/\/h5\.m\.taobao\.com\/mlapp\/olist.html\?.*tabCode=waitConfirm/.test(tabs[0].url)) {
+                        chrome.tabs.sendMessage(tabs[0].id, {"message": "scanTaobaoM"});
+                    } else if (/https?:\/\/trade\.1688\.com\/order\/buyer_order_list\.htm\?.*tradeStatus=waitbuyerreceive/.test(tabs[0].url)) {
+                        chrome.tabs.sendMessage(tabs[0].id, {"message": "scan1688"});
+                    } else if (/https?:\/\/trade2\.m\.1688\.com\/page\/buyerOrderList\.html\?.*status=waitbuyerreceive/.test(tabs[0].url)) {
+                        chrome.tabs.sendMessage(tabs[0].id, {"message": "scan1688M"});
+                    } else {
+                        chrome.tabs.sendMessage(tabs[0].id, {"message": "alert", "text": "No window found"});
                     }
                 });
                 break;
@@ -56,15 +48,16 @@ try {
                     chrome.tabs.sendMessage(tabs[0].id, {"message": "log", "text": "Crawling completed."});
                 });
                 console.log("Crawling completed.");
+                let payload = {"site": request.site, "data": list};
                 let init = {
                     method: 'POST',
                     redirect: "follow",
                     headers: {
                         'Content-Type': 'text/plain',
                     },
-                    body: JSON.stringify(list),
+                    body: JSON.stringify(payload),
                 };
-                let url = "https://script.google.com/macros/s/AKfycbzVkoQ0K12R1U6LpoMSj_4Nz_5y501n-jv6EPThF6Yxs0-OEqMUYoSrsyAs14DyndpijA/exec";
+                let url = "https://script.google.com/macros/s/AKfycbwf-ZqZfMKV4yVzY3JaOwKrYLCH7dDR1Njhe6BgAYbFkDubd333Wsvy1ntrwLNk3wCpDg/exec";
                 fetch(url , init)
                   .then((response) => response.json())
                   .then(function(res) {

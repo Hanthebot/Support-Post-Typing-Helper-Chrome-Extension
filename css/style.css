@@ -1,5 +1,16 @@
+body{
+	text-align: center;
+}
+
+#logo{
+	padding-left: 10px;
+	padding-right: 10px;
+	padding-bottom: 10px;
+}
+
 #textbox{
-	width:300px;
+    display: inline-block;
+	width:100%;
 	height:200px;
 }
 .in_button{
@@ -10,6 +21,7 @@
 .outer{
     width:100%;
     text-align: center;
+	padding-top: 10px;
 }
 .inner{
 	width:30%;
