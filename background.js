@@ -10,7 +10,7 @@ try {
                 setTimeout(function() {
                     chrome.tabs.query({url: "https://www.s-post.kr/Library/Html/ZipSearchPop_S.asp"}, function (tabs) {
                         if (tabs.length) {
-                            chrome.tabs.sendMessage(tabs[0].id, {"message": "address_process", "text": false});
+                        chrome.tabs.sendMessage(tabs[0].id, {"message": "address_process", "text": false});
                         }
                     });
                 }, 2000);

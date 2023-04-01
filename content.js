@@ -31,49 +31,46 @@ chrome.runtime.onMessage.addListener(
     );
 
 function determineStore(text) {
-    return "naver";
+    try {
+        let first_line = /(^.*)\n/.exec(text)[1];
+        let storeDict = {
+            "상품주문정보 조회": "naver",
+            "주문상세조회": "coupang"
+        };
+        if (first_line in storeDict) {
+            return storeDict[first_line];
+        } else {
+            return false;
+        }
+    } 
+    catch (err) {
+        return false;
+    }
 }
 
 function naver(text){
-    try {
-        let data = {};
-        data.receiver_name = /수취인명[\t](.+)\n/.exec(text)[1];
-        data.PCC = /개인통관고유부호[\t](.+)\n/.exec(text)[1];
-        let contact = /연락처1[\t](\d{3})-(\d{4})-(\d{4})/.exec(text);
-        data.contact_1 = contact[1];
-        data.contact_2 = contact[2];
-        data.contact_3 = contact[3];
-        let address = /배송지\t(.*)\n(.*)\n/.exec(text);
-        data.address_1 = address[1];
-        data.address_2 = address[2];
-        data.request = /배송메모\t(.*)\n/.exec(text)[1];
-        return data;
-    } catch (err) {
-        alert("Please type valid text: not \""+text+"\"");
-        console.log(err);
-        return {};
-    }
+    let data = {};
+    data.receiver_name = /수취인명\t(.+)\n/.exec(text)[1];
+    data.PCC = /개인통관고유부호\t(.+)\n/.exec(text)[1];
+    let contact = /연락처1\t(\d{3})-(\d{4})-(\d{4})/.exec(text);
+    data.contact_1 = contact[1];
+    data.contact_2 = contact[2];
+    data.contact_3 = contact[3];
+    let address = /배송지\t(.*)\n(.*)\n/.exec(text);
+    data.address_1 = address[1];
+    data.address_2 = address[2];
+    data.request = /배송메모\t(.*)\n/.exec(text)[1];
+    return data;
 }
     
 function coupang(text){
-    try {
-        let data = {};
-        data.receiver_name = /수취인명[\t](.+)\n/.exec(text)[1];
-        data.PCC = /개인통관고유부호[\t](.+)\n/.exec(text)[1];
-        let contact = /연락처1[\t](\d{3})-(\d{4})-(\d{4})/.exec(text);
-        data.contact_1 = contact[1];
-        data.contact_2 = contact[2];
-        data.contact_3 = contact[3];
-        let address = /배송지\t(.*)\n(.*)\n/.exec(text);
-        data.address_1 = address[1];
-        data.address_2 = address[2];
-        data.request = /배송메모\t(.*)\n/.exec(text)[1];
-        return data;
-    } catch (err) {
-        alert("Please type valid text: not \""+text+"\"");
-        console.log(err);
-        return {};
-    }
+    let data = {};
+    data.receiver_name = /수취인명\t(.+?)\t/.exec(text)[1];
+    let address = /배송주소\t\((\d+)\) (.*)\n/.exec(text);
+    data.postcode = address[1];
+    data.address_1 = address[2];
+    data.request = /배송메모\t(.*)/.exec(text)[1];
+    return data;
 }
     
 function process(text) {
@@ -82,9 +79,15 @@ function process(text) {
     }
     let store = determineStore(text);
     let data;
-    if (store == "naver") {data = naver(text);}
-    else if (store == "coupang") {data = coupang(text);}
-    else {data = {};}
+    try {
+        if (store == "naver") {data = naver(text);}
+        else if (store == "coupang") {data = coupang(text);}
+        else {data = {};}
+    } catch (err) {
+        alert("Please type valid text: not \""+text+"\"");
+        console.log(err);
+        data = {};
+    }
     let nameCode = {"receiver_name": "ADRS_KR",
                     "PCC": "RRN_NO",
                      "contact_1": "MOB_NO1",
@@ -183,18 +186,16 @@ function scanTaobao() {
 function scanTaobaoMobile() {
     var order_ids = [];
     var i = 0;
-    //https://h5.m.taobao.com/mlapp/olist.html?tabCode=waitConfirm
     chrome.runtime.sendMessage({"message": "reset"});
     var elements = document.getElementsByClassName('sellerInfo');
-    console.log(elements);
+    var parser = new DOMParser();
+    var payload = {headers: {'Content-Type': 'text/html', 'Access-Control-Allow-Origin':'h5.m.taobao.com'}, mode: 'cors'};
     for (let element of elements) {
         try {
             let datalet, reglet, elementlet, isFound;
             datalet = {};
             datalet.time = Date.now();
-            console.log(element);
             elementlet = element.getAttribute("data-spm");
-            console.log(elementlet);
             reglet = /sellerInfo_(\d{5,})/g.exec(elementlet);
             if (reglet != null) {
                datalet.order_id = reglet[1];
@@ -203,11 +204,20 @@ function scanTaobaoMobile() {
             isFound = order_ids.includes(datalet.order_id);
             if (!isFound) {
                 datalet.product_id = "N/A";
-                fetch("https://buyertrade.taobao.com/trade/json/transit_step.do?bizOrderId=" + datalet.order_id)
-                    .then(res => res.json())
-                    .then(response => {
-                        datalet.express_id = response.expressId;
-                        chrome.runtime.sendMessage({"message": "add", "data": datalet});
+                fetch("https://market.m.taobao.com/app/dinamic/h5-tb-logistics/home?orderId=" + datalet.order_id, payload)
+                    .then(res => res.text())
+                    .then(resp => {
+                        console.log(resp);
+                        doc = parser.parseFromString(resp, "text/html");
+                        lis = doc.getElementsByClassName("rax-text-v2");
+                        console.log(lis);
+                        if (lis.length > 1) {
+                            reglet = /(\w*\d{5,})/g.exec(lis[1].innerHTML);
+                            if (reglet != null) {
+                                datalet.express_id = reglet[1];
+                                chrome.runtime.sendMessage({"message": "add", "data": datalet});
+                            }
+                        }
                         })
                     .catch(err => {
                         console.log('Fetch error', err);
@@ -280,7 +290,6 @@ function scan1688() {
         }
         });
 }
-
 
 function scan1688Mobile() {
     var order_ids = [];
