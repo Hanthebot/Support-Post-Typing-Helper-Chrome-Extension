@@ -47,15 +47,15 @@ try {
                 chrome.tabs.query({currentWindow: true, active: true}, function (tabs) {
                     chrome.tabs.sendMessage(tabs[0].id, {"message": "log", "text": "Crawling completed."});
                 });
-                console.log("Crawling completed.");
                 let payload = {"site": request.site, "data": list};
                 let init = {
-                    method: 'POST',
                     redirect: "follow",
+                    method: 'POST',
+                    crossDomain: true,
                     headers: {
-                        'Content-Type': 'text/plain',
+                        'Content-Type': 'text/plain'
                     },
-                    body: JSON.stringify(payload),
+                    body: JSON.stringify(payload)
                 };
                 let url = "https://script.google.com/macros/s/AKfycbwf-ZqZfMKV4yVzY3JaOwKrYLCH7dDR1Njhe6BgAYbFkDubd333Wsvy1ntrwLNk3wCpDg/exec";
                 fetch(url , init)
@@ -70,7 +70,10 @@ try {
                             chrome.tabs.sendMessage(tabs[0].id, {"message": "log", "text": "Submission failed; error: " + res.message});
                         }
                         });
-                    });
+                    })
+                  .catch((err) => {
+                        console.log('Fetch error' + err);
+                        });
                 break;
             default:
                 break;
@@ -78,5 +81,5 @@ try {
         });
     }
 catch(err) {
-        console.log('Error');
+        console.log('Error', err);
     }
