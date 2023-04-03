@@ -57,7 +57,7 @@ try {
                     },
                     body: JSON.stringify(payload)
                 };
-                let url = "https://script.google.com/macros/s/AKfycbwf-ZqZfMKV4yVzY3JaOwKrYLCH7dDR1Njhe6BgAYbFkDubd333Wsvy1ntrwLNk3wCpDg/exec";
+                let url = "https://script.google.com/macros/s/<Deployment ID>/exec";
                 fetch(url , init)
                   .then((response) => response.json())
                   .then(function(res) {
