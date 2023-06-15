@@ -1,4 +1,4 @@
-var request_list = []; // list of requests
+var list = [];
 
 try {
     chrome.commands.onCommand.addListener(function (command) {
@@ -38,16 +38,16 @@ try {
     chrome.runtime.onMessage.addListener(function(request) {
         switch (request.message) {
             case "reset":
-                request_list = [];
+                list = [];
                 break;
             case "add":
-                request_list.push(request.data);
+                list.push(request.data);
                 break;
             case "execute":
                 chrome.tabs.query({currentWindow: true, active: true}, function (tabs) {
                     chrome.tabs.sendMessage(tabs[0].id, {"message": "log", "text": "Crawling completed."});
                 });
-                let payload = {"site": request.site, "data": request_list};
+                let payload = {"site": request.site, "data": list};
                 let init = {
                     redirect: "follow",
                     method: 'POST',
@@ -57,7 +57,7 @@ try {
                     },
                     body: JSON.stringify(payload)
                 };
-                let url = "https://script.google.com/macros/s/AKfycbwf-ZqZfMKV4yVzY3JaOwKrYLCH7dDR1Njhe6BgAYbFkDubd333Wsvy1ntrwLNk3wCpDg/exec";
+                let url = "https://script.google.com/macros/s/<Deployment ID>/exec";
                 fetch(url , init)
                   .then((response) => response.json())
                   .then(function(res) {
